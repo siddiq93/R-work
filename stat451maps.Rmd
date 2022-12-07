@@ -1,0 +1,144 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(tidyverse)
+library(maps)
+Temp_StateData <- read.csv("~/Desktop/stat451/Temp_StateData.csv")
+```
+
+
+```{r}
+help(package = "maps")
+?map_data
+
+my_worldmap <- map_data("world")
+
+ggplot(data = my_worldmap, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(fill = "white", color = "black")
+```
+
+suppose we want to map just the country Germany
+
+```{r}
+germany <- filter(my_worldmap, region == "Germany")
+ggplot(data = germany, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(fill = "white", color = "black")
+```
+
+suppose now we are interested in multiple countries for example lets select france and germany
+
+```{r}
+germany_france <- filter(my_worldmap, region == "Germany" | region == "France")
+ggplot(data = germany_france, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(fill = "white", color = "black")+coord_map()
+```
+
+##choropleth maps
+we will begin by creating a map of usa
+
+```{r}
+my_usa <- map_data("state")
+
+ggplot(data = my_usa, mapping = aes(x = long, y = lat, group = group))+geom_polygon(fill = "white", color = "black")
+
+states <- unique(my_usa$region)
+```
+
+Join the data using the region as the column for merging.
+
+```{r}
+map_data_combined <- left_join(my_usa, Temp_StateData, by = "region")
+```
+
+## to make a choropleth map with deafult colors
+
+```{r}
+ggplot(data = map_data_combined, mapping = aes(x = long, y = lat, group = group, fill = AvgTemp))+
+  geom_polygon(color = "black")+
+  theme_grey()
+```
+
+##changing the color pallete
+
+```{r}
+ggplot(data = map_data_combined, mapping = aes(x = long, y = lat, group = group, fill = AvgTemp))+
+  geom_polygon(color = "blue")+
+  scale_fill_viridis_c(option = "B")
+```
+
+```{r}
+world <- map_data("world")
+india <- filter(world,region == "India")
+```
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")
+```
+
+```{r}
+head(maps::world.cities)
+my_cities <- maps::world.cities
+```
+
+```{r}
+india_cities <- filter(my_cities, country.etc == "India")
+```
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+geom_polygon(color = "black", fill = "white")+
+geom_point(data = india_cities, aes(x = long, y = lat,group = NULL),color = "blue")
+```
+
+```{r}
+india_big_cities <- filter(my_cities, country.etc == "India" & pop > 1000000)
+```
+
+
+#reacreating map of india with only big cities ploted on it
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")+
+  geom_point(data = india_big_cities, aes(x = long, y = lat,group = NULL),color = "blue")
+```
+#vary the size of the points by population
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")+
+  geom_point(data = india_big_cities, aes(x = long, y = lat,group = NULL, size = pop),color = "blue")
+```
+
+#To vary the color of the dots we will create a fake categorical data column
+```{r}
+india_big_cities$qual <- sample(LETTERS[1:5], nrow(india_big_cities), replace = TRUE)
+```
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")+
+  geom_point(data = india_big_cities, aes(x = long, y = lat,group = NULL, size = pop, color = qual))
+```
+
+```{r}
+india_big_cities$Population <- india_big_cities$pop
+india_big_cities$Qualitative <- india_big_cities$qual
+```
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")+
+  geom_point(data = india_big_cities, aes(x = long, y = lat,group = NULL, size = pop),color = Qualitative)
+```
+
+```{r}
+ggplot(data = india, mapping = aes(x = long, y = lat, group = group))+
+  geom_polygon(color = "black", fill = "white")+
+  geom_point(data = india_big_cities, aes(x = long, y = lat, group = NULL, size = Population, color = Qualitative))
+```
