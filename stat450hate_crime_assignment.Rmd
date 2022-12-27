@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+hate_crimes <- read_csv("hate_crimes.csv")
+```
+
+```{r}
+view(hate_crimes)
+```
+
+
+```{r}
+summary(hate_crimes$avg_hatecrimes_per_100k_fbi)
+```
+
+find missing info 
+```{r}
+hate_crimes %>% filter(is.na(avg_hatecrimes_per_100k_fbi))
+```
+
+
+```{r}
+arrange(hate_crimes, desc(avg_hatecrimes_per_100k_fbi))
+```
+
+```{r}
+hate_crimes %>% select(state, avg_hatecrimes_per_100k_fbi) %>% 
+  arrange(avg_hatecrimes_per_100k_fbi)
+```
+
+
+```{r}
+ggplot(data = hate_crimes, aes(x =  share_unemployed_seasonal, y = avg_hatecrimes_per_100k_fbi)) +
+geom_point() +
+geom_smooth(se = FALSE) +
+labs(x ="Seasonally adjusted unemployment", y = "Average hate crimes per 100,000 residents, 2010-2015")
+```
+

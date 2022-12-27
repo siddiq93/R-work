@@ -1,0 +1,68 @@
+---
+title: "HW 8, STAT 432"
+author: "Siddiq Khan"
+output: html_document
+---
+
+# Exercise 1
+
+```{r}
+library(ggplot2)
+library(openintro)
+bdims$sex2 <- factor(bdims$sex, levels=c(0,1), labels=c("F", "M"))
+```
+
+# A
+
+```{r}
+ggplot(bdims, aes(hgt, wgt, color = sex2)) +
+geom_point(alpha=0.7) +
+geom_smooth(method="lm", se=FALSE)
+```
+
+# B
+
+```{r}
+lm1 <- lm(wgt ~ hgt + sex2, data=bdims)
+summary(lm1)
+```
+# C
+
+#Balance^ = βˆ0 + βˆ1hgt + βˆ2sex2 = = (βˆ0 + βˆ1 hgt, if sex2 t=0 (No) (βˆ0 + βˆ2) + βˆ1 hgt, if sex2t=1 (Yes)
+
+# D
+```{r}
+lm2 <- lm(wgt ~ hgt + sex2 + hgt:sex2, data=bdims)
+summary(lm2)
+```
+#No the interaction term is not significant since p value is not less then 0.05.
+
+# E
+#Balance \ = βˆ0 + βˆ1hgt + βˆ2sex2 + βˆ3hgt · sex2M = (βˆ0 + βˆ1hgt, if sex2M=0 (No) (βˆ0 + βˆ2) + (βˆ1 + βˆ3)hgt, if sex2Mt=1 (Yes)
+
+# Exercise 2
+
+# A
+
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+geom_point(alpha=0.7) +
+geom_smooth(method="lm", se=FALSE)
+```
+
+# B
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+geom_point(alpha=0.7, size=0.9) +
+facet_wrap(~ Species) 
+```
+
+# C
+
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+geom_point(alpha=0.7, size=0.9) +
+facet_wrap(~ Species) +
+geom_smooth(method="lm", se=FALSE, size=1)
+```
+

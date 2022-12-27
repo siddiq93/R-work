@@ -1,0 +1,82 @@
+---
+title: "stat452HW3"
+output: html_document
+---
+
+# Exercise 1
+# 1 TRUE
+# 2 TRUE
+# 3 TRUE
+# 4 FALSE the r^2 needs to be closer to 0 for the model to be a good fit for the data.
+
+```{r}
+library(tidyverse) # load tidyverse packages (ggplot2, dplyr, ...)
+library(AmesHousing) # load Ames housing data set
+library(caret) # package for machine learning
+ames <- make_ames() # set up data frame
+```
+
+```{r}
+set.seed(123) 
+cv_model1 <- train(
+  Sale_Price ~ TotRms_AbvGrd,
+  data = ames,
+  method = "lm",
+  trControl = trainControl(method = "cv", number = 10)
+)
+```
+
+```{r}
+cv_model1
+```
+
+```{r}
+set.seed(123) 
+cv_model2 <- train(
+  Sale_Price ~ TotRms_AbvGrd + Year_Built,
+  data = ames,
+  method = "lm",
+  trControl = trainControl(method = "cv", number = 10)
+)
+cv_model2
+```
+
+```{r}
+cv_model2
+```
+
+```{r}
+set.seed(123) 
+cv_model3 <- train(
+  Sale_Price ~ TotRms_AbvGrd + Year_Built + Bldg_Type,
+  data = ames,
+  method = "lm",
+  trControl = trainControl(method = "cv", number = 10)
+)
+cv_model3
+```
+
+```{r}
+cv_model3
+```
+
+```{r}
+summary(resamples(list(
+  model1 = cv_model1, 
+  model2 = cv_model2,
+  model3 = cv_model3
+)))
+```
+
+```{r}
+cv_model1$resample
+```
+
+```{r}
+cv_model2$resample
+```
+
+```{r}
+cv_model3$resample
+```
+# I think the second and third model have the best predictive performance because the mse is closer to 0 on that model then it is for the first model.

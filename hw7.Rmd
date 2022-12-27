@@ -1,0 +1,72 @@
+---
+title: "HW 7"
+author: "Siddiq Khan"
+output: html_document
+---
+
+```{r, message = FALSE}
+# load libraries
+library(tidyverse)
+library(rpart)
+```
+
+# Exercise 1
+
+```{r}
+county_votes <- readRDS(url("https://ericwfox.github.io/data/county_votes16.rds"))
+```
+
+## a
+
+```{r}
+county_votes$result <- factor(county_votes$trump_win, 
+                         levels = c(1,0), labels=c("trump", "clinton"))
+```
+
+# B
+```{r}
+set.seed(123)
+n <- nrow(county_votes)
+train_index <- sample(1:n, round(0.7*n))
+votes_train <- county_votes[train_index, ]
+votes_test <- county_votes[-train_index, ]
+```
+
+# C
+```{r}
+t1 <- rpart(result ~ obama_pctvotes + pct_pop65 + pct_black + pct_white + pct_hispanic + pct_asian + highschool + bachelors + income,
+data = votes_train, method = "class")
+```
+
+# D
+```{r}
+# plot of tree fit to training data
+par(cex=0.6, xpd=NA)
+plot(t1)
+text(t1, use.n = TRUE)
+```
+
+#The Obama pct predictor votes is the most important predictor for election results.
+
+# E
+```{r}
+# predictions on test set
+preds1 <- predict(t1, newdata = votes_test, type = "class")
+```
+
+```{r}
+# confusion matrix
+tb <- table(prediction = preds1, actual = votes_test$result)
+addmargins(tb)
+```
+
+```{r}
+# Accuracy (percent correctly classified for trump)
+(760 + 150) / 934
+```
+
+```{r}
+# Accuracy (percent correctly classified for clinton)
+(13 + 11) / 934
+```
+

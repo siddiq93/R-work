@@ -1,0 +1,124 @@
+---
+title: "Stat450hw2"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+mpg
+```
+# Exercise 1
+
+
+```{r}
+ggplot(data = mpg, aes(x = displ, y = cty)) +
+geom_point() + geom_smooth(se = FALSE)
+```
+
+
+
+
+```{r}
+ggplot(data = mpg, aes(x = displ, y = cty, color = drv)) +
+geom_point() +
+geom_smooth(se = FALSE)
+```
+
+
+
+
+
+```{r}
+ggplot(mpg,aes(x=displ,y=cty))+
+          geom_point(data = mpg, mapping = aes(x = displ, y = cty, shape = drv, color = drv))+
+         geom_smooth(se=FALSE,color="black")
+```
+
+
+
+
+```{r}
+ggplot(data = mpg, aes(x = displ, y = cty)) +
+geom_point() +
+geom_smooth(se = FALSE) +
+facet_wrap(~ drv)
+```
+
+# Exercise 2
+
+```{r} 
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x=cut, fill = color), position = "dodge")
+```
+
+```{r}
+ggplot(data = diamonds)+
+  geom_bar(mapping = aes(x=cut, y=stat(prop), fill = color), position = "fill") + ylab("Proportion")
+```
+
+# Exercise 3
+
+```{r}
+library(maps)
+library(mapproj)
+```
+
+# A
+
+```{r}
+ca <- map_data("county", "ca")
+ggplot(ca, aes(long, lat, group = group)) +
+geom_polygon(fill = "white", color = "black") +
+coord_map()
+```
+
+
+# B
+
+```{r}
+unique(ca$subregion)
+length(unique(ca$subregion))
+```
+
+Its putting counties of California in alphabetic order and giving the total number of counties which is 58.
+
+# C
+
+```{r}
+alameda_ca <- filter(ca, subregion == "alameda")
+```
+
+
+# D
+
+```{r}
+ggplot(alameda_ca, aes(x=long, y=lat))+
+  geom_polygon(fill = "white", color = "black")+
+  coord_map()
+```
+
+
+
+
+```{r}
+
+alameda_ca <- map_data("state", "california")
+ggplot(alameda_ca, aes(long, lat, group, order, region, subregion)) +
+geom_polygon(fill = "white", color = "black") +
+coord_map()
+
+```
+
+
+
+
+
+
+
+
+
+
+

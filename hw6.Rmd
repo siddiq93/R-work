@@ -1,0 +1,107 @@
+---
+title: "HW 6, STAT 452"
+author: "Siddiq Khan"
+output: html_document
+---
+
+# Exercise 1
+#A TRUE
+#B FALSE
+#C TRUE
+#D TRUE
+#E FALSE
+
+# Exercise 2
+
+```{r}
+library(glmnet) 
+library(ISLR)
+data("College")
+```
+
+
+```{r}
+lm1 <- lm(Apps ~ ., data=College)
+summary(lm1)
+```
+
+# A
+```{r}
+lm2 <- step(lm1, trace = FALSE)
+```
+
+```{r}
+summary(lm2)
+```
+
+```{r}
+length(coef(lm2))
+```
+
+# B
+```{r}
+n <- nrow(College)
+lm3 <- step(lm1, k=log(n), trace = FALSE)
+```
+
+
+```{r}
+summary(lm3)
+```
+
+```{r}
+length(coef(lm3))
+```
+
+# The backwards stepwise selection with AIC selected 12 variables whereas backwards BIC stepwise selection selected 10 variables. The BIC has a smaller set of variables. The R^2 is about 92% for all three models (full model, model selection with AIC, model selected with BIC).
+
+# Exercise 3
+```{r}
+library(glmnet)
+library(ISLR)
+Hitters2 <- na.omit(College)
+x <- model.matrix(Apps ~ ., data=College)[, -1]
+y <- College$Apps
+```
+
+# A
+
+```{r}
+lasso <- glmnet(x, y, alpha = 1)
+plot(lasso, xvar = "lambda")
+```
+
+# B 
+```{r}
+set.seed(5)
+lasso_cv <- cv.glmnet(x, y, alpha=1)
+```
+
+```{r}
+lasso_cv$lambda.min
+```
+
+```{r}
+coef(lasso_cv, s="lambda.min")
+```
+
+# Two coefficents are equal to exactly zero F.undergrad and books.
+
+# Bonus
+
+```{r}
+x <- model.matrix(Apps ~ . - Private, data = College)[, -1]
+```
+
+```{r}
+lasso <- glmnet(x, y, alpha = 1)
+plot(lasso, xvar = "lambda")
+```
+
+
+
+
+
+
+
+

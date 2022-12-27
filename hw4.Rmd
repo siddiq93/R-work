@@ -1,0 +1,210 @@
+---
+title: "HW 4"
+author: "Siddiq Khan"
+output: html_document
+---
+
+# Exercise 1
+
+        actual
+#prediction Not Spam    Spam     sum
+#Spam         4           1       5
+#Not Spam     2           3       5
+#Sum          6           4       10
+
+# Accuracy (percent correctly classified)
+(4 + 3 / 10)
+7/10 = 0.7
+
+# Sensitivity (percent of spam correctly classified)
+3 / 4 = 0.75
+
+# Specificity (percent of not spam correctly classified)
+4 / 6 = 0.67
+
+# Exercise 2
+
+```{r, message = FALSE}
+library(tidyverse)
+library(NHANES)
+nhanes2 <- NHANES %>%
+  select(PhysActive, BMI) %>%
+  na.omit() %>%
+  mutate(PhysActive = ifelse(PhysActive == "Yes", 1, 0))
+```
+
+```{r}
+glm1 <- glm(PhysActive ~ BMI, family = "binomial", data = NHANES)
+summary(glm1)
+```
+# yˆ = 1.7179 + -0.0524x
+
+```{r}
+ggplot(nhanes2, aes(x = BMI, y = PhysActive)) + geom_point(alpha = 0.15) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se=F) +
+  labs(x= "BMI", y = "Probability of Physicaly Active") + theme_bw()
+```
+
+```{r}
+new_x <- data.frame(BMI = 20)
+# predict logit
+predict(glm1, newdata = new_x) 
+# predict probability
+predict(glm1, newdata = new_x, type="response") 
+```
+
+```{r}
+new_x <- data.frame(BMI = 30)
+# predict logit
+predict(glm1, newdata = new_x) 
+# predict probability
+predict(glm1, newdata = new_x, type="response") 
+```
+
+
+
+
+# Exercise 3
+
+```{r, message = FALSE}
+library(pROC)
+county_votes <- readRDS(url("https://ericwfox.github.io/data/county_votes16.rds"))
+```
+
+##A
+
+```{r}
+set.seed(999)
+n <- nrow(county_votes); n
+round(0.7*n)
+train_index <- sample(1:n, 2178) 
+county_votes_train <- county_votes[train_index, ]
+county_votes_test <- county_votes[-train_index, ]
+```
+#B
+
+```{r}
+glm1 <- glm(trump_win ~ pct_pop65 + pct_black + pct_white + pct_hispanic
++ pct_asian + highschool + bachelors + income, family = "binomial", 
+            data=county_votes_train)
+summary(glm1)
+```
+
+#C
+
+```{r}
+probs1 <- predict(glm1, newdata = county_votes_test, type = "response")
+```
+
+```{r}
+preds1 <- ifelse(probs1 > 0.5, 1, 0)
+
+head(data.frame(probs1, preds1), n=15)
+```
+
+
+```{r}
+tb <- table(prediction = preds1,
+            actual = county_votes_test$trump_win)
+addmargins(tb)
+```
+
+```{r}
+# Accuracy (percent correctly classified)
+(97 + 764) / 934
+# Sensitivity (percent of Trump wins (1) correctly classified)
+764 / 785
+# Specificity (percent of Trump losses (0) correctly classified)
+97 / 149
+```
+
+#D
+
+```{r}
+library(pROC)
+
+roc_obj <- roc(county_votes_test$trump_win, probs1)
+
+plot(1 - roc_obj$specificities, roc_obj$sensitivities, type="l",
+     xlab = "1 - Specificity", ylab = "Sensitivity")
+points(x = 52/149, y = 764/785, col="red", pch=19) 
+abline(0, 1, lty=2) # 1-1 line
+
+auc(roc_obj)
+```
+
+#E The intercept for the simple logistic regression model is less then the multiple logistic regression model. The multiple predictor uses 8 variables where as the other one only uses one variable. The single model is based only on votes for obama where the multiple model counts usues multiple demographics such as race and education.
+
+
+
+
+# Exercise 4
+
+```{r}
+nhanes3 <- NHANES %>%
+  select(PhysActive, BMI, Age) %>%
+  na.omit() %>%
+  mutate(PhysActive = ifelse(PhysActive == "Yes", 1, 0))
+```
+
+#A
+
+```{r}
+set.seed(999)
+n <- nrow(NHANES); n
+round(0.7*n)
+train_index <- sample(1:n, 2178) 
+NHANES_train <- NHANES[train_index, ]
+NHANES_test <- NHANES[-train_index, ]
+```
+#B
+
+```{r}
+glm1 <- glm(PhysActive ~ BMI + Age, family = "binomial", 
+            data=NHANES_train)
+summary(glm1)
+```
+#C
+
+```{r}
+probs1 <- predict(glm1, newdata = NHANES_test, type = "response")
+```
+
+```{r}
+preds1 <- ifelse(probs1 > 0.5, 1, 0)
+
+head(data.frame(probs1, preds1), n=15)
+```
+
+
+```{r}
+tb <- table(prediction = preds1,
+            actual = NHANES_test$PhysActive)
+addmargins(tb)
+```
+
+```{r}
+# Accuracy (percent correctly classified)
+(1293 + 2668) / 6441
+# Sensitivity (percent of Physically active wins (1) correctly classified)
+2668 / 3587
+# Specificity (percent of Physically active losses (0) correctly classified)
+1293 / 2854
+```
+#D
+
+```{r}
+library(pROC)
+
+roc_obj <- roc(NHANES_test$PhysActive, probs1)
+
+plot(1 - roc_obj$specificities, roc_obj$sensitivities, type="l",
+     xlab = "1 - Specificity", ylab = "Sensitivity")
+points(x = 1561/2854, y = 2668/3587, col="red", pch=19) 
+abline(0, 1, lty=2) # 1-1 line
+
+auc(roc_obj)
+```
+
+
+#E The model with age and BMI accuratley estimates becuase it take into account your age and your BMI and accuratley shows you how active you should be by idetifying your age and BMI.
