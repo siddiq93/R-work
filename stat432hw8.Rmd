@@ -1,0 +1,120 @@
+---
+title: "stat452hw8"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(rpart)
+library(randomForest)
+library(vip)
+library(AppliedPredictiveModeling)
+data(abalone)
+```
+
+```{r}
+view(abalone)
+```
+
+```{r}
+lm1 <- lm(Rings ~ ., data=abalone)
+summary(lm1)
+```
+
+
+```{r}
+ggplot(abalone, aes(Rings, Diameter)) + geom_point(size=0.5)
+```
+
+```{r}
+ggplot(abalone, aes(Rings, Height)) + geom_point(size=0.5)
+```
+
+```{r}
+ggplot(abalone, aes(Rings, WholeWeight)) + geom_point(size=0.5)
+```
+
+# B
+```{r}
+set.seed(123)
+n <- nrow(abalone)
+train_index <- sample(1:n, round(0.7*n))
+abalone_train <- abalone[train_index, ]
+abalone_test <- abalone[-train_index, ]
+```
+
+```{r}
+lm2 <- lm(Rings ~ ., data=abalone)
+summary(lm2)
+```
+
+
+```{r}
+t1 <- rpart(Rings ~ .,
+data = abalone_train, method = "anova")
+```
+
+
+```{r}
+rf1 <- randomForest(Rings ~ ., data = abalone_train)
+```
+
+```{r}
+par(cex=0.6, xpd=NA)
+plot(t1)
+text(t1, use.n = TRUE)
+```
+
+
+```{r}
+pred_rf1 <- predict(rf1, newdata = abalone_test)
+pred_lm1 <- predict(lm1, newdata = abalone_test)
+pred_lm2 <- predict(lm2, newdata = abalone_test)
+```
+
+```{r}
+RMSE <- function(y, y_hat) {
+  sqrt(mean((y - y_hat)^2))
+}
+```
+
+```{r}
+RMSE(abalone_test$Rings, pred_rf1)
+```
+
+```{r}
+RMSE(abalone_test$Rings, pred_lm1)
+```
+
+```{r}
+RMSE(abalone_test$Rings, pred_lm2)
+```
+
+```{r}
+pred_df <- data.frame(
+  Actual = abalone_test$Rings, 
+  Pred_RF = pred_rf1,
+  Pred_LM = pred_lm2
+) 
+```
+
+```{r}
+ggplot(pred_df, aes(x = Actual, y = Pred_RF)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("Actual") + ylab("Predicted") +
+  ggtitle("Random Forests") +
+  xlim(0,2000) + ylim(0,2000)
+```
+
+
+```{r}
+ggplot(pred_df, aes(x = Actual, y = Pred_LM)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  xlab("Actual") + ylab("Predicted") +
+  ggtitle("Linear Regression") +
+  xlim(0,2000) + ylim(0,2000)
+
+```
+
